@@ -40,6 +40,7 @@ public class Motors {
 
 	// Rest of the INITIALIZATIONS
 	public static void initi(){
+		
 		// Initialize Drive Train
 		fLeft = new CANTalon(FRONT_LEFT_PORT);
 		fRight = new CANTalon(FRONT_RIGHT_PORT);
@@ -54,6 +55,7 @@ public class Motors {
 		elevatorSlaveOne = new CANTalon(ELEVATOR_SLAVE_ONE);
 		elevatorSlaveTwo = new CANTalon(ELEVATOR_SLAVE_TWO);
 		elevatorSlaveThree = new CANTalon(ELEVATOR_SLAVE_THREE);
+		
 		
 		// Initialize Carriage
 		forksMotor = new CANTalon(FORKS_PORT);

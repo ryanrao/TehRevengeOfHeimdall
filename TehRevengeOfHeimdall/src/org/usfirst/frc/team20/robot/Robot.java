@@ -79,7 +79,7 @@ public class Robot extends IterativeRobot {
 	public void teleopPeriodic() {
 		OperatorControls.opControls();
 		
-		if (Motors.driver.getRawButton(6)) {
+		if (Motors.driver.getRawButton(1)) {
 			fieldCentric = !fieldCentric;
 		}
 		if (fieldCentric) {

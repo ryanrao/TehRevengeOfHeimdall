@@ -1,5 +1,6 @@
 package org.usfirst.frc.team20.robot;
 
+import edu.wpi.first.wpilibj.Joystick.RumbleType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class DriverControls {
@@ -40,14 +41,14 @@ public class DriverControls {
 		// End Assign Wheels
 
 		// Driver Tray Control
-		if (Motors.driver.getRawButton(1)) {
+		if (Motors.driver.getRawButton(6)) {
 			trayBool = !trayBool;
 			if (trayBool) {
 				Motors.trayMotor.set(1);
 			} else if (!trayBool) {
 				Motors.trayMotor.set(-1);
 			}
-			if (!Motors.driver.getRawButton(1)
+			if (!Motors.driver.getRawButton(6)
 					&& (Motors.trayMotor.getOutputCurrent() > 20
 							|| !Sensors.trayExtened.get() || !Sensors.trayRetracted
 								.get())) {
@@ -72,14 +73,14 @@ public class DriverControls {
 	public static void fieldDrive() {
 
 		// Driver Tray Control
-		if (Motors.driver.getRawButton(1)) {
+		if (Motors.driver.getRawButton(6)) {
 			trayBool = !trayBool;
 			if (trayBool) {
 				Motors.trayMotor.set(1);
 			} else if (!trayBool) {
 				Motors.trayMotor.set(-1);
 			}
-			if (!Motors.driver.getRawButton(1)
+			if (!Motors.driver.getRawButton(6)
 					&& (Motors.trayMotor.getOutputCurrent() > 20
 							|| !Sensors.trayExtened.get() || !Sensors.trayRetracted
 								.get())) {
@@ -107,6 +108,17 @@ public class DriverControls {
 
 		// End Gyro Reset
 
+		//For da LOLZ
+		if(Motors.driver.getRawButton(11)){
+		Motors.operator.setRumble(RumbleType.kRightRumble , 1);
+		Motors.operator.setRumble(RumbleType.kLeftRumble , 1);
+		}
+		
+		if(Motors.driver.getRawButton(12)){
+			Motors.operator.setRumble(RumbleType.kRightRumble , 0);
+			Motors.operator.setRumble(RumbleType.kLeftRumble , 0);
+			}
+		//End 
 		double values[] = new double[4];// FL BL FR BR
 		double angle = Sensors.gyro.getAngle();
 		if ((lturn == 0 && rturn == 0 && speed == 0 && strafe == 0)

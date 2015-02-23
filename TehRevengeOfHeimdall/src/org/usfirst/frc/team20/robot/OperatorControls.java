@@ -1,6 +1,7 @@
 package org.usfirst.frc.team20.robot;
 
 import edu.wpi.first.wpilibj.CANTalon.ControlMode;
+import edu.wpi.first.wpilibj.Joystick.RumbleType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -12,39 +13,50 @@ public class OperatorControls {
 	public static double d = .5;
 	public static double ramp = 1500;
 	public static double talFil = 0;
-	
+
 	public static int POVal = 0;
-	
+
 	private static Timer elevatorTimer = new Timer();
 	private static double ELEVATOR_COOLDOWN = .1;
 	private static boolean maintainSetpoint = false;
-	
+	private static boolean trayBool = false;
+
 	// TODO Update Axis Values!
 	public static void opControls() {
 		double elevatorEnc = Motors.elevatorMaster.getEncPosition();
 		double analogElevator = Motors.operator.getRawAxis(1);
 		double analogFork = -Motors.operator.getRawAxis(2);
 		double clawState = Motors.operator.getPOV();
-
+		
+		//Interrupt
+		Motors.forksMotor.changeControlMode(ControlMode.PercentVbus);
+		Motors.elevatorMaster.changeControlMode(ControlMode.PercentVbus);
+		Motors.elevatorMaster.set(0);
+		Motors.forksMotor.set(0);
+		Motors.rollersLeft.set(0);
+		Motors.rollersRight.set(0);
+		Motors.trayMotor.set(0);
+		//End Interrupt
+		
 		// Claw Code
 		// KnoxKode for PID Forks
 		// if (Motors.operator.getPOV() == 270) {
 		// Motors.forksMotor.set(25000);
 		// POVal = 270;
 		// }
-		// if (Motors.operator.getPOV() == 180) {
+		// if (Motors.operator.getPOV() == 0) {
 		// Motors.forksMotor.set(59000);
 		// POVal = 180;
 		// }
-		// if (Motors.operator.getPOV() == 0) {
+		// if (Motors.operator.getPOV() == 90) {
 		// Motors.forksMotor.set(16000);
 		// POVal = 0;
 		// }
-		// if (Motors.operator.getPOV() == 90) {
+		// if (Motors.operator.getPOV() == 180) {
 		// Motors.forksMotor.set(75000);
 		// POVal = 90;
 		// }
-		// if (Motors.operator.getRawButton(5)) {
+		// if (Motors.operator.getPOV() == 135) {
 		// Motors.forksMotor.set(200);
 		// }
 		// double talCur = Motors.forksMotor.getOutputCurrent();
@@ -63,22 +75,36 @@ public class OperatorControls {
 		// }
 		Motors.forksMotor.changeControlMode(ControlMode.PercentVbus);
 		Motors.forksMotor.set(analogFork);
-
-		if (talFil > 15) {
-			Motors.forksMotor.set(Motors.forksMotor.getPosition());
+		if (Motors.forksMotor.getOutputCurrent() > 15) {
+			Motors.operator.setRumble(RumbleType.kRightRumble, 1);
+			Motors.operator.setRumble(RumbleType.kLeftRumble, 1);
+			Motors.forksMotor.set(0);
+		} else {
+			Motors.operator.setRumble(RumbleType.kRightRumble, 0);
+			Motors.operator.setRumble(RumbleType.kLeftRumble, 0);
 		}
+
+		// if (talFil > 15) {
+		// Motors.forksMotor.set(Motors.forksMotor.getPosition());
+		// }
 		// End KnoxKode
 		// Fork Code End
-
-		// Tray Code
-		if (Motors.operator.getRawButton(9)) {
-			Motors.trayMotor.set(1);
-		}
-		if (Motors.operator.getRawButton(10)) {
-			Motors.trayMotor.set(-1);
-		}
-		if (!Motors.operator.getRawButton(9)&&!Motors.operator.getRawButton(10)&&(Motors.operator.getRawButton(11) || Motors.trayMotor.getOutputCurrent() > 20 || !Sensors.trayExtened.get() || !Sensors.trayRetracted.get())) {
-			Motors.trayMotor.set(0);
+		
+		// Tray Code TODO Once Ele encoder works
+		if (Motors.operator.getRawButton(6)) {
+			trayBool = !trayBool;
+			if (trayBool /*&& 
+		Motors.elevatorMaster.getEncPosition()<400*/) {
+				Motors.trayMotor.set(1);
+			} else if (!trayBool) {
+				Motors.trayMotor.set(-1);
+			}
+			if (!Motors.operator.getRawButton(6)
+					&& (Motors.trayMotor.getOutputCurrent() > 20
+							|| !Sensors.trayExtened.get() || !Sensors.trayRetracted
+								.get())) {
+				Motors.trayMotor.set(0);
+			}
 		}
 		// End Tray Code
 
@@ -87,7 +113,7 @@ public class OperatorControls {
 			Motors.rollersLeft.set(-1);
 			Motors.rollersRight.set(1);
 		}
-		if (Motors.operator.getRawButton(4)) {
+		if (Motors.operator.getRawButton(10)) {
 			Motors.rollersLeft.set(1);
 			Motors.rollersRight.set(-1);
 		}
@@ -95,24 +121,30 @@ public class OperatorControls {
 			Motors.rollersLeft.set(0);
 			Motors.rollersRight.set(0);
 		}
-		if (Motors.operator.getRawButton(3)) {
-			Motors.rollersLeft.set(.5);
-			Motors.rollersRight.set(.5);
-		}
+		//TODO
+//		if (Motors.operator.getRawButton(3)) {
+//			Motors.rollersLeft.set(.5);
+//			Motors.rollersRight.set(.5);
+//		}
 		// End Roller Code
 
 		// Elevator Code
 
-		//Zero The Elevator When It Reaches The Bottom
+		// Zero The Elevator When It Reaches The Bottom
 		if (!Sensors.elevatorShort.get()) {
 			Motors.elevatorMaster.changeControlMode(ControlMode.Position);
 			Motors.elevatorMaster.setPosition(0);
 			Motors.elevatorMaster.changeControlMode(ControlMode.PercentVbus);
+
+			Motors.operator.setRumble(RumbleType.kRightRumble, .5f);
+			Motors.operator.setRumble(RumbleType.kLeftRumble, .5f);
+		} else {
+			Motors.operator.setRumble(RumbleType.kRightRumble, 0);
+			Motors.operator.setRumble(RumbleType.kLeftRumble, 0);
 		}
-		
-		Motors.elevatorMaster.set(analogElevator);
-		// boolean decrement = Motors.operator.getRawButton(8);
-		// boolean increment = Motors.operator.getRawButton(6);
+
+		// boolean decrement = Motors.operator.getRawButton(5);
+		// boolean increment = Motors.operator.getRawButton(7);
 		//
 		// if((increment || decrement) && elevatorTimer.get() == 0)
 		// elevatorTimer.start();
