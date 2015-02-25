@@ -1,9 +1,7 @@
 package org.usfirst.frc.team20.robot;
 
-import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.IterativeRobot;
-import edu.wpi.first.wpilibj.CANTalon.ControlMode;
-import edu.wpi.first.wpilibj.CANTalon.FeedbackDevice;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
@@ -17,32 +15,33 @@ public class Robot extends IterativeRobot {
 
 	public static double lastCycleEncoderPosition;
 
+	public static final int FRONT_LEFT_PORT = 1, BACK_LEFT_PORT = 10,
+			FRONT_RIGHT_PORT = 2, BACK_RIGHT_PORT = 9,
+			ELEVATOR_MASTER_PORT = 7, TRAY_PORT = 6, FORKS_PORT = 5,
+			LEFT_ROLLER_PORT = 2, RIGHT_ROLLER_PORT = 1,
+			ELEVATOR_SLAVE_ONE = 4, ELEVATOR_SLAVE_TWO = 3,
+			ELEVATOR_SLAVE_THREE = 8;
+
+	public static Joystick driver = new Joystick(0);
+	public static Joystick operator = new Joystick(1);
+	Tray tray = new Tray(TRAY_PORT);
+	Rollers rollers = new Rollers(LEFT_ROLLER_PORT, RIGHT_ROLLER_PORT);
+	Forks forks = new Forks(FORKS_PORT);
+	Elevator elevator = new Elevator(ELEVATOR_MASTER_PORT, ELEVATOR_SLAVE_ONE,
+			ELEVATOR_SLAVE_TWO, ELEVATOR_SLAVE_THREE);
+
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
 	 */
 	public void robotInit() {
-		Motors Motor = new Motors();
-		Motors.initi();
-
-		Motors.trayMotor.changeControlMode(ControlMode.PercentVbus);
-		
-		Motors.elevatorSlaveThree.changeControlMode(ControlMode.Follower);
-		Motors.elevatorSlaveThree.set(7);
-		Motors.elevatorSlaveTwo.changeControlMode(ControlMode.Follower);
-		Motors.elevatorSlaveThree.set(7);
-		Motors.elevatorSlaveOne.changeControlMode(ControlMode.Follower);
-		Motors.elevatorSlaveThree.set(7);
-		
-		// PID
-
-		Motors.forksMotor.setFeedbackDevice(FeedbackDevice.QuadEncoder);
-		Motors.forksMotor.changeControlMode(CANTalon.ControlMode.Position);
-		Motors.forksMotor.setPosition(0);
-		Motors.forksMotor.setPID(OperatorControls.p, OperatorControls.i,
-				OperatorControls.d);
-		Motors.forksMotor.setCloseLoopRampRate(OperatorControls.ramp);
-		Motors.forksMotor.enableControl();
+		// Motors.forksMotor.setFeedbackDevice(FeedbackDevice.QuadEncoder);
+		// Motors.forksMotor.changeControlMode(CANTalon.ControlMode.Position);
+		// Motors.forksMotor.setPosition(0);
+		// Motors.forksMotor.setPID(OperatorControls.p, OperatorControls.i,
+		// OperatorControls.d);
+		// Motors.forksMotor.setCloseLoopRampRate(OperatorControls.ramp);
+		// Motors.forksMotor.enableControl();
 	}
 
 	/**
@@ -52,63 +51,41 @@ public class Robot extends IterativeRobot {
 
 	public void autonomousPeriodic() {
 
-		if (counter == 0) {
-			double talCur = Motors.forksMotor.getOutputCurrent();
-			Motors.forksMotor.set(-85000);
-			OperatorControls.talFil = OperatorControls.talFil * .9 + talCur
-					* .1;
-			if (OperatorControls.talFil > 15) {
-				Motors.forksMotor.setPosition(0);
-				Motors.forksMotor.set(0);
-				counter = 1;
-			}
-		}
 	}
 
 	@Override
 	public void teleopInit() {
-		lastCycleEncoderPosition = Motors.elevatorMaster.getPosition();
+
 	}
 
 	/**
 	 * This function is called periodically during operator control
 	 */
 	public static boolean fieldCentric = true;
-	public static boolean dPad = false;
 
 	public void teleopPeriodic() {
-		OperatorControls.opControls();
-		
-		if (Motors.driver.getRawButton(1)) {
-			fieldCentric = !fieldCentric;
-		}
-		if (fieldCentric) {
-			DriverControls.fieldDrive();
-		} else {
-			DriverControls.robotDrive();
-		}
-		
-		
 
-		counter = 0;
+		elevator.checkElevator();
+		forks.checkForks();
+		tray.checkTray();
 
-		SmartDashboard.putString("Elevator Master =", ""
-				+ Motors.elevatorMaster.getOutputCurrent());
+		SmartDashboard.putString("Elevator Master = ",
+				" " + elevator.master.getOutputCurrent());
 		SmartDashboard.putString("Elevator slave one =", ""
-				+ Motors.elevatorSlaveOne.getOutputCurrent());
+				+ elevator.slave1.getOutputCurrent());
 		SmartDashboard.putString("Elevator slave two =", ""
-				+ Motors.elevatorSlaveTwo.getOutputCurrent());
+				+ elevator.slave2.getOutputCurrent());
 		SmartDashboard.putString("Elevator slave three =", ""
-				+ Motors.elevatorSlaveThree.getOutputCurrent());
+				+ elevator.slave3.getOutputCurrent());
 
 		SmartDashboard.putString("Elevator Master ==", ""
-				+ Motors.elevatorMaster.getOutputVoltage());
+				+ elevator.master.getOutputVoltage());
 		SmartDashboard.putString("Elevator slave one ==", ""
-				+ Motors.elevatorSlaveOne.getOutputVoltage());
+				+ elevator.slave1.getOutputVoltage());
 		SmartDashboard.putString("Elevator slave two ==", ""
-				+ Motors.elevatorSlaveTwo.getOutputVoltage());
+				+ elevator.slave2.getOutputVoltage());
 		SmartDashboard.putString("Elevator slave three ==", ""
-				+ Motors.elevatorSlaveThree.getOutputVoltage());
+				+ elevator.slave3.getOutputVoltage());
 
 	}
 
